@@ -110,8 +110,11 @@ contract Lotto is VRFConsumerBaseV2Plus {
         address payable winner = s_players[winnerIndex];
         s_lottoState = LottoState.OPEN;
         s_recentWinner = winner;
-        (bool success, ) = winner.call{value: address(this).balance}("");
-        if(!success){
+        s_players = new address payable[](0);
+        s_lastPickedTime = block.timestamp;
+        (bool success,) = winner.call{value: address(this).balance}("");
+
+        if (!success) {
             revert Lotto__TransferFailed();
         }
     }
