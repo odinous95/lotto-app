@@ -34,7 +34,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
     uint32 private constant NUM_WORDS = 1; // Number of random words to request
     uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
     address payable[] private s_players;
-    address private s_recentWinner
+    address private s_recentWinner;
     LottoState private s_lottoState;
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -72,6 +72,22 @@ contract Lotto is VRFConsumerBaseV2Plus {
         s_players.push(payable(msg.sender));
         emit LottoEntered(msg.sender);
     }
+    /**
+     * @notice Prepares the VRF request configuration
+     * @dev Returns a VRFV2PlusClient.RandomWordsRequest struct with the necessary parameters
+     * @return VRFV2PlusClient.RandomWordsRequest struct
+     */
+
+    function getRequestConfig() internal view returns (VRFV2PlusClient.RandomWordsRequest memory) {
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
+            keyHash: i_keyHash,
+            subId: i_subId,
+            requestConfirmations: REQUEST_CONFIRMETION,
+            callbackGasLimit: CALLBACK_GAS_LIMIT,
+            numWords: NUM_WORDS
+        });
+        return request;
+    }
 
     /**
      * @notice Picks a winner for the lottery if the time interval has passed
@@ -83,15 +99,11 @@ contract Lotto is VRFConsumerBaseV2Plus {
         if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
             revert Lotto__NotEnoughTimePassed();
         }
+
         s_lottoState = LottoState.CALCULATING;
-        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
-            keyHash: i_keyHash,
-            subId: i_subId,
-            requestConfirmations: REQUEST_CONFIRMETION,
-            callbackGasLimit: CALLBACK_GAS_LIMIT,
-            numWords: NUM_WORDS,
-            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false})) // new parameter
-        });
+
+        VRFV2PlusClient.RandomWordsRequest memory request = getRequestConfig();
+
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
     }
     // Callback function called by Chainlink VRF with the random number
