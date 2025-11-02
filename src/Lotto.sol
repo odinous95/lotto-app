@@ -35,6 +35,8 @@ contract Lotto is VRFConsumerBaseV2Plus {
     {
         i_entranceFee = _entranceFee;
         i_lotto_interval = _interval;
+        i_keyHash = _keyHash;
+        i_subId = _subId;
         s_lastPickedTime = block.timestamp;
     }
 
