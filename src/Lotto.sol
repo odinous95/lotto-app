@@ -43,6 +43,8 @@ contract Lotto is VRFConsumerBaseV2Plus {
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
 
+    event WinnerPicked(address indexed winner);
+
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     constructor(uint256 _entranceFee, uint256 _interval, address vrfCoordinator, bytes32 keyHash, uint64 subId)
         VRFConsumerBaseV2Plus(vrfCoordinator)
@@ -117,6 +119,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
         if (!success) {
             revert Lotto__TransferFailed();
         }
+        emit WinnerPicked(winner);
     }
     // Getter functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
