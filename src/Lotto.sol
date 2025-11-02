@@ -56,6 +56,13 @@ contract Lotto is VRFConsumerBaseV2Plus {
     }
 
     // Lottery functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    /**
+     * @notice Allows a user to enter the lottery by paying the entrance fee
+     * @dev Reverts if the sent value is less than the entrance fee
+     * Emits a LottoEntered event upon successful entry
+     *
+     */
     function enterLotto() public payable {
         if (msg.value < i_entranceFee) {
             revert Lotto__NotEnoughToEnterLotto();
@@ -67,6 +74,12 @@ contract Lotto is VRFConsumerBaseV2Plus {
         emit LottoEntered(msg.sender);
     }
 
+    /**
+     * @notice Picks a winner for the lottery if the time interval has passed
+     * @dev Reverts if the required time interval has not passed since the last pick
+     * Requests random words from Chainlink VRF
+     *
+     */
     function pickWinner() public {
         if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
             revert Lotto__NotEnoughTimePassed();
