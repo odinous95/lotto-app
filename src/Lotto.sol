@@ -14,7 +14,7 @@ contract Lotto {
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     uint256 private immutable i_entranceFee;
-    uint256 private immutable i_interval; // Time interval for picking a winner in seconds
+    uint256 private immutable i_lotto_interval; // Time interval for picking a winner in seconds
     address payable[] private s_players;
     uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
 
@@ -24,7 +24,7 @@ contract Lotto {
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     constructor(uint256 _entranceFee, uint256 _interval) {
         i_entranceFee = _entranceFee;
-        i_interval = _interval;
+        i_lotto_interval = _interval;
         s_lastPickedTime = block.timestamp;
     }
 
@@ -38,7 +38,7 @@ contract Lotto {
     }
 
     function pickWinner() public {
-        if (block.timestamp - s_lastPickedTime < i_interval) {
+        if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
             revert Lotto__NotEnoughTimePassed();
         }
         // if passed we pick a winner (placeholder logic)
