@@ -13,6 +13,7 @@ contract Lotto {
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     uint256 private immutable i_entranceFee;
+uint256 private immutable i_interval; // Time interval for picking a winner in seconds
     address payable[] private s_players;
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
