@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 /**
  * @title Lotto
  * @author Odinous
  * @notice A simple lottery contract
  * @dev This contract is a placeholder for a lottery system implementation.
  */
-contract Lotto {
+
+contract Lotto is VRFConsumerBaseV2Plus {
     // Errors -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     error Lotto__NotEnoughToEnterLotto();
     error Lotto__NotEnoughTimePassed();
@@ -22,7 +25,9 @@ contract Lotto {
     event LottoEntered(address indexed player);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    constructor(uint256 _entranceFee, uint256 _interval) {
+    constructor(uint256 _entranceFee, uint256 _interval, address vrfCoordinator)
+        VRFConsumerBaseV2Plus(vrfCoordinator)
+    {
         i_entranceFee = _entranceFee;
         i_lotto_interval = _interval;
         s_lastPickedTime = block.timestamp;
