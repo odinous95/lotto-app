@@ -10,6 +10,7 @@ pragma solidity ^0.8.19;
 contract Lotto {
     // Errors -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     error Lotto__NotEnoughToEnterLotto();
+error Lotto__NotEnoughTimePassed();
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     uint256 private immutable i_entranceFee;
@@ -37,7 +38,11 @@ i_interval = _interval;
     }
 
     function pickWinner() public {
-        // Implementation goes here
+        if (block.timestamp - s_lastPickedTime < i_interval) {
+            revert Lotto__NotEnoughTimePassed();
+        }
+        // if passed we pick a winner (placeholder logic)
+        // we get it from chainlink VRF
     }
 
     // Getter functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
