@@ -17,13 +17,10 @@ contract Lotto is VRFConsumerBaseV2Plus {
     error Lotto__TransferFailed();
     error Lotto__NotOpen();
 
-
-
-    
     // Enum for the state of the lotto-=-=-=-=-=-=-=
     enum LottoState {
         OPEN,
-        CALCULATING,
+        CALCULATING
     }
 
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -46,7 +43,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
     event WinnerPicked(address indexed winner);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    constructor(uint256 _entranceFee, uint256 _interval, address vrfCoordinator, bytes32 keyHash, uint64 subId)
+    constructor(uint256 _entranceFee, uint256 _interval, address vrfCoordinator, bytes32 _keyHash, uint64 _subId)
         VRFConsumerBaseV2Plus(vrfCoordinator)
     {
         i_entranceFee = _entranceFee;
