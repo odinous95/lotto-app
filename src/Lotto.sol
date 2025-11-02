@@ -8,8 +8,15 @@ pragma solidity ^0.8.19;
  * @dev This contract is a placeholder for a lottery system implementation.
  */
 contract Lotto {
+    // Errors -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    error Lotto__NotEnoughToEnterLotto();
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
     uint256 private immutable i_entranceFee;
+    address payable[] private s_players;
+
+    // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    event LottoEntered(address indexed player);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     constructor(uint256 _entranceFee) {
@@ -18,8 +25,13 @@ contract Lotto {
 
     // Lottery functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     function enterLotto() public payable {
-        // Implementation goes here
+        if (msg.value < i_entranceFee) {
+            revert Lotto__NotEnoughToEnterLotto();
+        }
+        s_players.push(payable(msg.sender));
+        emit LottoEntered(msg.sender);
     }
+
     function pickWinner() public {
         // Implementation goes here
     }
