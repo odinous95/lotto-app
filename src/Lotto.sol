@@ -15,6 +15,7 @@ contract Lotto {
     uint256 private immutable i_entranceFee;
 uint256 private immutable i_interval; // Time interval for picking a winner in seconds
     address payable[] private s_players;
+uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
@@ -22,6 +23,8 @@ uint256 private immutable i_interval; // Time interval for picking a winner in s
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     constructor(uint256 _entranceFee) {
         i_entranceFee = _entranceFee;
+i_interval = _interval;
+        s_lastPickedTime = block.timestamp;
     }
 
     // Lottery functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
