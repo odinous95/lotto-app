@@ -14,6 +14,18 @@ contract Lotto is VRFConsumerBaseV2Plus {
     // Errors -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     error Lotto__NotEnoughToEnterLotto();
     error Lotto__NotEnoughTimePassed();
+    error Lotto__TransferFailed();
+    error Lotto__NotOpen();
+
+
+
+    
+    // Enum for the state of the lotto-=-=-=-=-=-=-=
+    enum LottoState {
+        OPEN,
+        CALCULATING,
+    }
+
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     uint256 private immutable i_entranceFee;
@@ -25,6 +37,8 @@ contract Lotto is VRFConsumerBaseV2Plus {
     uint32 private constant NUM_WORDS = 1; // Number of random words to request
     uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
     address payable[] private s_players;
+    address private s_recentWinner
+    LottoState private s_lottoState;
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
@@ -38,12 +52,16 @@ contract Lotto is VRFConsumerBaseV2Plus {
         i_keyHash = _keyHash;
         i_subId = _subId;
         s_lastPickedTime = block.timestamp;
+        s_lottoState = LottoState.OPEN;
     }
 
     // Lottery functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     function enterLotto() public payable {
         if (msg.value < i_entranceFee) {
             revert Lotto__NotEnoughToEnterLotto();
+        }
+        if (s_lottoState != LottoState.OPEN) {
+            revert Lotto__NotOpen();
         }
         s_players.push(payable(msg.sender));
         emit LottoEntered(msg.sender);
@@ -53,7 +71,8 @@ contract Lotto is VRFConsumerBaseV2Plus {
         if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
             revert Lotto__NotEnoughTimePassed();
         }
-        VRFV2PlusClient.RandomWordsRequest request = VRFV2PlusClient.RandomWordsRequest({
+        s_lottoState = LottoState.CALCULATING;
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
             subId: i_subId,
             requestConfirmations: REQUEST_CONFIRMETION,
@@ -63,9 +82,25 @@ contract Lotto is VRFConsumerBaseV2Plus {
         });
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
     }
+    // Callback function called by Chainlink VRF with the random number
 
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
-        // Implementation for selecting a winner using randomWords
+    /**
+     *
+     * @param _requestId
+     * @param _randomWords
+     * @dev Uses the random words to pick a winner from the players array
+     * Transfers the contract balance to the winner
+     *
+     */
+    function fulfillRandomWords(uint256 _requestId, uint256[] calldata _randomWords) internal override {
+        uint256 winnerIndex = _randomWords[0] % s_players.length;
+        address payable winner = s_players[winnerIndex];
+        s_lottoState = LottoState.OPEN;
+        s_recentWinner = winner;
+        (bool success, ) = winner.call{value: address(this).balance}("");
+        if(!success){
+            revert Lotto__TransferFailed();
+        }
     }
     // Getter functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
