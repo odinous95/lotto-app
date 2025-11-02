@@ -10,21 +10,21 @@ pragma solidity ^0.8.19;
 contract Lotto {
     // Errors -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     error Lotto__NotEnoughToEnterLotto();
-error Lotto__NotEnoughTimePassed();
+    error Lotto__NotEnoughTimePassed();
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     uint256 private immutable i_entranceFee;
-uint256 private immutable i_interval; // Time interval for picking a winner in seconds
+    uint256 private immutable i_interval; // Time interval for picking a winner in seconds
     address payable[] private s_players;
-uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
+    uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    constructor(uint256 _entranceFee) {
+    constructor(uint256 _entranceFee, uint256 _interval) {
         i_entranceFee = _entranceFee;
-i_interval = _interval;
+        i_interval = _interval;
         s_lastPickedTime = block.timestamp;
     }
 
