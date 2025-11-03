@@ -24,22 +24,23 @@ contract Lotto is VRFConsumerBaseV2Plus {
     }
 
     // State variables -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
+    // storage variables
+    uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
+    address payable[] private s_players;
+    address private s_recentWinner;
+    LottoState private s_lottoState;
+    // immutable variables
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_lotto_interval; // Time interval for picking a winner in seconds
+    // chainlink VRF variables
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subId;
     uint16 private constant REQUEST_CONFIRMETION = 3;
     uint32 private constant CALLBACK_GAS_LIMIT = 100000; // Gas limit for the callback function
     uint32 private constant NUM_WORDS = 1; // Number of random words to request
-    uint256 private s_lastPickedTime; // Timestamp of the last winner pick (snapshot)
-    address payable[] private s_players;
-    address private s_recentWinner;
-    LottoState private s_lottoState;
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
-
     event WinnerPicked(address indexed winner);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -60,7 +61,6 @@ contract Lotto is VRFConsumerBaseV2Plus {
      * @notice Allows a user to enter the lottery by paying the entrance fee
      * @dev Reverts if the sent value is less than the entrance fee
      * Emits a LottoEntered event upon successful entry
-     *
      */
     function enterLotto() public payable {
         if (msg.value < i_entranceFee) {
@@ -72,12 +72,13 @@ contract Lotto is VRFConsumerBaseV2Plus {
         s_players.push(payable(msg.sender));
         emit LottoEntered(msg.sender);
     }
+
     /**
      * @notice Prepares the VRF request configuration
      * @dev Returns a VRFV2PlusClient.RandomWordsRequest struct with the necessary parameters
+     * @dev Used internally when requesting random words from Chainlink VRF
      * @return VRFV2PlusClient.RandomWordsRequest struct
      */
-
     function getRequestConfig() internal view returns (VRFV2PlusClient.RandomWordsRequest memory) {
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
@@ -99,22 +100,17 @@ contract Lotto is VRFConsumerBaseV2Plus {
         if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
             revert Lotto__NotEnoughTimePassed();
         }
-
         s_lottoState = LottoState.CALCULATING;
-
         VRFV2PlusClient.RandomWordsRequest memory request = getRequestConfig();
-
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
     }
-    // Callback function called by Chainlink VRF with the random number
 
     /**
-     *
      * @param _requestId
      * @param _randomWords
+     * @notice Callback function used by Chainlink VRF to provide random words when requested
      * @dev Uses the random words to pick a winner from the players array
      * Transfers the contract balance to the winner
-     *
      */
     function fulfillRandomWords(uint256 _requestId, uint256[] calldata _randomWords) internal override {
         uint256 winnerIndex = _randomWords[0] % s_players.length;
@@ -130,12 +126,12 @@ contract Lotto is VRFConsumerBaseV2Plus {
         }
         emit WinnerPicked(winner);
     }
-    // Getter functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    // Getter functions -=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
      * @notice Returns the entrance fee for the lottery
      * @return The entrance fee in wei
      */
-
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
     }
