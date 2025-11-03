@@ -36,8 +36,8 @@ contract Lotto is VRFConsumerBaseV2Plus {
     // chainlink VRF variables
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subId;
+    uint32 private constant i_callbackGasLimit = 100000; // Gas limit for the callback function
     uint16 private constant REQUEST_CONFIRMETION = 3;
-    uint32 private constant CALLBACK_GAS_LIMIT = 100000; // Gas limit for the callback function
     uint32 private constant NUM_WORDS = 1; // Number of random words to request
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -45,13 +45,19 @@ contract Lotto is VRFConsumerBaseV2Plus {
     event WinnerPicked(address indexed winner);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    constructor(uint256 _entranceFee, uint256 _interval, address vrfCoordinator, bytes32 _keyHash, uint64 _subId)
-        VRFConsumerBaseV2Plus(vrfCoordinator)
-    {
+    constructor(
+        uint256 _entranceFee,
+        uint256 _interval,
+        address vrfCoordinator,
+        bytes32 _keyHash,
+        uint64 _subId,
+        uint32 _callbackGasLimit
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = _entranceFee;
         i_lotto_interval = _interval;
         i_keyHash = _keyHash;
         i_subId = _subId;
+        i_callbackGasLimit = _callbackGasLimit;
         s_lastPickedTime = block.timestamp;
         s_lottoState = LottoState.OPEN;
     }
@@ -85,7 +91,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
             keyHash: i_keyHash,
             subId: i_subId,
             requestConfirmations: REQUEST_CONFIRMETION,
-            callbackGasLimit: CALLBACK_GAS_LIMIT,
+            callbackGasLimit: i_callbackGasLimit,
             numWords: NUM_WORDS,
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
@@ -138,7 +144,6 @@ contract Lotto is VRFConsumerBaseV2Plus {
     /**
      * @notice Picks a winner for the lottery if the time interval has passed
      * @dev Reverts if the required time interval has not passed since the last pick
-     *
      */
     function preformUpKeep() public {
         (bool upkeepNeeded,) = this.checkUpkeep("");
