@@ -91,21 +91,6 @@ contract Lotto is VRFConsumerBaseV2Plus {
     }
 
     /**
-     * @notice Picks a winner for the lottery if the time interval has passed
-     * @dev Reverts if the required time interval has not passed since the last pick
-     * Requests random words from Chainlink VRF
-     *
-     */
-    function pickWinner() public {
-        if (block.timestamp - s_lastPickedTime < i_lotto_interval) {
-            revert Lotto__NotEnoughTimePassed();
-        }
-        s_lottoState = LottoState.CALCULATING;
-        VRFV2PlusClient.RandomWordsRequest memory request = getRequestConfig();
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
-    }
-
-    /**
      * @param _requestId
      * @param _randomWords
      * @notice Callback function used by Chainlink VRF to provide random words when requested
@@ -151,11 +136,26 @@ contract Lotto is VRFConsumerBaseV2Plus {
     }
     // 2. function to perform upkeep
 
+    /**
+     * @notice Picks a winner for the lottery if the time interval has passed
+     * @dev Reverts if the required time interval has not passed since the last pick
+     *
+     */
+    function preformUpKeep() public {
+        (bool upkeepNeeded,) = this.checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Lotto__UpKeepNotNeeded(address(this).balance, s_players.length, uint256(s_lottoState));
+        }
+        s_lottoState = LottoState.CALCULATING;
+        VRFV2PlusClient.RandomWordsRequest memory request = getRequestConfig();
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+    }
     // Getter functions -=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
      * @notice Returns the entrance fee for the lottery
      * @return The entrance fee in wei
      */
+
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
     }
