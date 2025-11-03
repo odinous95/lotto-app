@@ -16,6 +16,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
     error Lotto__NotEnoughTimePassed();
     error Lotto__TransferFailed();
     error Lotto__NotOpen();
+    error Lotto__UpKeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 lottoState);
 
     // Enum for the state of the lotto-=-=-=-=-=-=-=
     enum LottoState {
@@ -85,14 +86,13 @@ contract Lotto is VRFConsumerBaseV2Plus {
             subId: i_subId,
             requestConfirmations: REQUEST_CONFIRMETION,
             callbackGasLimit: CALLBACK_GAS_LIMIT,
-            numWords: NUM_WORDS
+            numWords: NUM_WORDS,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
         return request;
     }
 
     /**
-     * @param _requestId
-     * @param _randomWords
      * @notice Callback function used by Chainlink VRF to provide random words when requested
      * @dev Uses the random words to pick a winner from the players array
      * Transfers the contract balance to the winner
@@ -124,7 +124,6 @@ contract Lotto is VRFConsumerBaseV2Plus {
      * 2. The lottery is in the OPEN state
      * 3. There is at least one player in the lottery
      * 4. The contract has a non-zero balance
-     *
      */
     function checkUpkeep(bytes calldata) external view returns (bool upkeepNeeded, bytes memory) {
         bool timePassed = (block.timestamp - s_lastPickedTime) >= i_lotto_interval;
