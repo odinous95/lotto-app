@@ -127,6 +127,30 @@ contract Lotto is VRFConsumerBaseV2Plus {
         emit WinnerPicked(winner);
     }
 
+    // chainlink automation functions -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    // 1 function to check if upkeep is needed
+    /**
+     * @notice Checks if the lottery needs upkeep (i.e., if it's time to pick a winner)
+     * @dev This function is called by Chainlink Automation to determine if performUpkeep should be called
+     * @return upkeepNeeded True if upkeep is needed, false otherwise
+     * @return bytes Empty bytes array (not used in this implementation)
+     * Conditions for upkeep:
+     * 1. The time interval has passed since the last winner pick
+     * 2. The lottery is in the OPEN state
+     * 3. There is at least one player in the lottery
+     * 4. The contract has a non-zero balance
+     *
+     */
+    function checkUpkeep(bytes calldata) external view returns (bool upkeepNeeded, bytes memory) {
+        bool timePassed = (block.timestamp - s_lastPickedTime) >= i_lotto_interval;
+        bool isOpen = s_lottoState == LottoState.OPEN;
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+        upkeepNeeded = (timePassed && isOpen && hasPlayers);
+        return (upkeepNeeded, "");
+    }
+    // 2. function to perform upkeep
+
     // Getter functions -=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
      * @notice Returns the entrance fee for the lottery
