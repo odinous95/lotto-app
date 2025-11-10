@@ -22,7 +22,7 @@ contract LottoTest is Test {
     function setUp() external {
         LottoDeploy deployer = new LottoDeploy();
         (lotto, helperConfig) = deployer.deployContract();
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getLocalConfig();
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getActiveConfig();
         entranceFee = networkConfig.entranceFee;
         lotteryInterval = networkConfig.lotteryInterval;
         vrfCoordinator = networkConfig.vrfCoordinator;

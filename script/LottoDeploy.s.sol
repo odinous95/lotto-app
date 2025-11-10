@@ -6,9 +6,9 @@ import {Lotto} from "../src/Lotto.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract LottoDeploy is Script {
-    function deployContract() external returns (Lotto, HelperConfig) {
+    function deployContract() public returns (Lotto, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getActiveConfigByChainID();
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getActiveConfig();
 
         vm.startBroadcast();
         Lotto lotto = new Lotto(
