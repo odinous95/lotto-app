@@ -51,7 +51,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
         uint256 _interval,
         address vrfCoordinator,
         bytes32 _keyHash,
-        uint64 _subId,
+        uint256 _subId,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = _entranceFee;
