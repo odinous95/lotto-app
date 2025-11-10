@@ -36,13 +36,14 @@ contract Lotto is VRFConsumerBaseV2Plus {
     // chainlink VRF variables
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subId;
-    uint32 private constant i_callbackGasLimit = 100000; // Gas limit for the callback function
+    uint32 private immutable i_callbackGasLimit; // Gas limit for the callback function
     uint16 private constant REQUEST_CONFIRMETION = 3;
     uint32 private constant NUM_WORDS = 1; // Number of random words to request
 
     // Events -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     event LottoEntered(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     // Constructor -=-=-=-=-=-=-=-------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     constructor(
@@ -102,11 +103,10 @@ contract Lotto is VRFConsumerBaseV2Plus {
      * @notice Callback function used by Chainlink VRF to provide random words when requested
      * @dev Uses the random words to pick a winner from the players array
      * @dev Transfers the contract balance to the winner
-     * @param _requestId The ID of the VRF request
      * @param _randomWords An array of random words provided by Chainlink VRF
      * Emits a WinnerPicked event upon successful winner selection
      */
-    function fulfillRandomWords(uint256 _requestId, uint256[] calldata _randomWords) internal override {
+    function fulfillRandomWords(uint256, /* requestId */ uint256[] calldata _randomWords) internal override {
         uint256 winnerIndex = _randomWords[0] % s_players.length;
         address payable winner = s_players[winnerIndex];
         s_lottoState = LottoState.OPEN;
@@ -134,12 +134,12 @@ contract Lotto is VRFConsumerBaseV2Plus {
      * 3. There is at least one player in the lottery
      * 4. The contract has a non-zero balance
      */
-    function checkUpkeep(bytes calldata) external view returns (bool upkeepNeeded, bytes memory) {
+    function checkUpkeep(bytes memory /* checkData */ ) external view returns (bool upkeepNeeded, bytes memory) {
         bool timePassed = (block.timestamp - s_lastPickedTime) >= i_lotto_interval;
         bool isOpen = s_lottoState == LottoState.OPEN;
         bool hasPlayers = s_players.length > 0;
         bool hasBalance = address(this).balance > 0;
-        upkeepNeeded = (timePassed && isOpen && hasPlayers);
+        upkeepNeeded = (timePassed && isOpen && hasPlayers && hasBalance);
         return (upkeepNeeded, "");
     }
     // 2. function to perform upkeep
@@ -156,6 +156,7 @@ contract Lotto is VRFConsumerBaseV2Plus {
         s_lottoState = LottoState.CALCULATING;
         VRFV2PlusClient.RandomWordsRequest memory request = getRequestConfig();
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        emit RequestedRaffleWinner(requestId);
     }
     // Getter functions -=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     /**
