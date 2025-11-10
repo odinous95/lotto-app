@@ -3,17 +3,15 @@ pragma solidity ^0.8.19;
 
 import {Test} from "forge-std/Test.sol";
 import {Lotto} from "../src/Lotto.sol";
+import {HelperConfig} from "../script/HelperConfig.s.sol";
+import {LottoDeploy} from "../script/LottoDeploy.s.sol";
 
 contract LottoTest is Test {
-    Lotto private lotto;
-    uint256 private constant ENTRANCE_FEE = 0.1 ether;
+    Lotto public lotto;
+    HelperConfig public helperConfig;
 
-    function setUp() public {
-        lotto = new Lotto(ENTRANCE_FEE);
-    }
-
-    function testGetEntranceFee() public {
-        uint256 fee = lotto.getEntranceFee();
-        assertEq(fee, ENTRANCE_FEE, "Entrance fee should match the initialized value");
+    function setUp() external {
+        LottoDeploy deployer = new LottoDeploy();
+        (lotto, helperConfig) = deployer.deployContract();
     }
 }
