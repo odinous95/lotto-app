@@ -26,9 +26,9 @@ contract HelperConfig is Script, LocalChainConstants {
         localNetworkConfig = NetworkConfig({
             entranceFee: ENTERANCE_FEE,
             lotteryInterval: LOTTERY_INTERVAL,
-            vrfCoordinator: address(0),
-            keyHash: bytes32(0),
-            subId: 0,
+            vrfCoordinator: VRF_COORDINATOR,
+            keyHash: KEY_HASH,
+            subId: SUB_ID,
             callbackGasLimit: CALLBACK_GAS_LIMIT
         });
     }
