@@ -31,7 +31,7 @@ contract LottoTest is Test {
         callbackGasLimit = networkConfig.callbackGasLimit;
     }
 
-    function testLottoInitialPrice() public {
+    function testLottoEntrence() public {
         entranceFee = lotto.getEntranceFee();
         console.log("Entrance fee is:", entranceFee);
         assert(entranceFee > 0);
