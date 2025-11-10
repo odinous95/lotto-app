@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {Script} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
-abstract contract LocalChainConstants {
+abstract contract Constants {
     uint256 public constant LOCAL_NETWORK_ID = 31337;
     uint256 public constant SEPOLIA_TESTNET_NETWORK_ID = 11155111;
     // Mock VRFCoordinator parameters
@@ -15,12 +15,11 @@ abstract contract LocalChainConstants {
     uint256 public constant ENTERANCE_FEE = 0.1 ether;
     uint256 public constant LOTTERY_INTERVAL = 30;
     uint32 public constant CALLBACK_GAS_LIMIT = 100000;
-    address public constant VRF_COORDINATOR = address(0);
     uint256 public constant SUB_ID = 0;
     bytes32 public constant KEY_HASH = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 }
 
-contract HelperConfig is Script, LocalChainConstants {
+contract HelperConfig is Script, Constants {
     struct NetworkConfig {
         uint256 entranceFee;
         uint256 lotteryInterval;
@@ -37,18 +36,18 @@ contract HelperConfig is Script, LocalChainConstants {
         activeNetworkConfigs[SEPOLIA_TESTNET_NETWORK_ID] = getSepoliaETHConfig();
     }
 
-    function getActiveConfigByChainID(uint256 chainId) public view returns (NetworkConfig memory) {
+    function getActiveConfigByChainID(uint256 chainId) public returns (NetworkConfig memory) {
         if (activeNetworkConfigs[chainId].vrfCoordinator != address(0)) {
             return activeNetworkConfigs[chainId];
         } else if (chainId == LOCAL_NETWORK_ID) {
-            return localNetworkConfig;
+            return getlocalNetworkConfig();
         } else {
             revert("No network config found for the current chain ID");
         }
     }
 
-    function getActiveConfig() public view returns (NetworkConfig memory) {
-        return getActiveConfigByChainID((block.chainid));
+    function getActiveConfig() public returns (NetworkConfig memory) {
+        return getActiveConfigByChainID(block.chainid);
     }
 
     // Sepolia ETH Testnet Config
