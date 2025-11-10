@@ -12,12 +12,11 @@ contract LottoTest is Test {
     HelperConfig public helperConfig;
     address public USER = makeAddr("user");
     uint256 public constant STARTING_BALANCE = 10 ether;
-
     uint256 public entranceFee;
     uint256 public lotteryInterval;
     address public vrfCoordinator;
     bytes32 public keyHash;
-    uint64 public subId;
+    uint256 public subId;
     uint32 public callbackGasLimit;
 
     function setUp() external {
@@ -33,7 +32,7 @@ contract LottoTest is Test {
     }
 
     function testLottoInitialPrice() public {
-        uint256 entranceFee = lotto.getEntranceFee();
+        entranceFee = lotto.getEntranceFee();
         console.log("Entrance fee is:", entranceFee);
         assert(entranceFee > 0);
     }
