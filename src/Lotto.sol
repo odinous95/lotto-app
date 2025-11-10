@@ -101,7 +101,10 @@ contract Lotto is VRFConsumerBaseV2Plus {
     /**
      * @notice Callback function used by Chainlink VRF to provide random words when requested
      * @dev Uses the random words to pick a winner from the players array
-     * Transfers the contract balance to the winner
+     * @dev Transfers the contract balance to the winner
+     * @param _requestId The ID of the VRF request
+     * @param _randomWords An array of random words provided by Chainlink VRF
+     * Emits a WinnerPicked event upon successful winner selection
      */
     function fulfillRandomWords(uint256 _requestId, uint256[] calldata _randomWords) internal override {
         uint256 winnerIndex = _randomWords[0] % s_players.length;
